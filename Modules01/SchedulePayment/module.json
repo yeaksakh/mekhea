@@ -1,0 +1,15 @@
+{
+    "name": "SchedulePayment",
+    "alias": "schedulepayment",
+    "description": "SchedulePayment",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\SchedulePayment\\Providers\\SchedulePaymentServiceProvider"
+    ],
+    "files": [],
+    "active": 1,
+    "order": 0,
+    "aliases": {},
+    "requires": []
+}

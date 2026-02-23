@@ -1,0 +1,73 @@
+<?php
+
+return [
+    'dashboard' => 'ផ្ទាំងគ្រប់គ្រង',
+    'ExpenseAutoFill' => 'ExpenseAutoFill',
+    'total_ExpenseAutoFill_category' => 'ចំនួនប្រភេទសរុប',
+    'total_ExpenseAutoFill' => 'សរុប ExpenseAutoFill',
+    'ExpenseAutoFill_category' => 'ប្រភេទ',
+    'all_ExpenseAutoFill' => 'ExpenseAutoFill ទាំងអស់',
+    'add_ExpenseAutoFill' => 'បន្ថែម ExpenseAutoFill',
+    'edit_expenseautofill' => 'កែប្រែ ExpenseAutoFill',
+    'expenseautofill' => 'ExpenseAutoFill',
+    'expenseautofill_created' => 'ExpenseAutoFill បានបង្កើតថ្មី',
+    'expenseautofill_module' => 'ExpenseAutoFill',
+    'title' => 'ចំណងជើង',
+    'telegram' => 'Telegram',
+    'add_category' => 'បន្ថែមប្រភេទ',
+    'key' => 'ពាក្យគន្លឹះ',
+    'category' => 'ប្រភេទ',
+    'create_by' => 'បង្កើតដោយ',
+    'assign_to' => 'ចាត់តាំងទៅកាន់',
+    'supplier_id' => 'អ្នកផ្គត់ផ្គង់',
+    'customer_id' => 'អតិថិជន',
+    'product_id' => 'ផលិតផល',
+    'date' => 'កាលបរិច្ឆេទ',
+    'description' => 'ការពិពណ៌នា',
+    'all_category' => 'ប្រភេទទាំងអស់',
+    'name' => 'ឈ្មោះ',
+    'setting' => 'ការកំណត់',
+    'language_settings' => 'ការកំណត់ភាសា',
+    'update_language' => 'ធ្វើបច្ចុប្បន្នភាពភាសា',
+    'permission_settings' => 'ការកំណត់សិទ្ធិ',
+    'select_language' => 'ជ្រើសរើសភាសា',
+    'language_keys' => 'ភាសា',
+    'translation' => 'ការបកប្រែ',
+    'save_translations' => 'រក្សាទុក',
+    'audit' => 'សវនកម្',
+    'audit_status' => 'ស្ថានភាពសវនកម្ម',
+    'audit_note' => 'ចំណាំសវនកម្',
+    'image' => 'រូបភាព',
+    'no' => 'ទេ',
+    'yes' => 'បាទ/ចាស',
+    'pending' => 'កំពុងរង់ចាំ',
+    'accept' => 'ទទួលយក',
+    'cancel' => 'បោះបង់',
+    'low' => 'ទាប',
+    'medium' => 'មធ្យម',
+    'high' => 'ខ្ពស់',
+    'urgent' => 'បន្ទាន់',
+    'partial' => 'ដោយផ្នែក',
+    'paid' => 'បានបង់',
+    'due' => 'នៅជំពាក់',
+    'order' => 'ការកម្មង់',
+    'packed' => 'បានវេចខ្ចប់',
+    'shipped' => 'បានដឹកជញ្ជូន',
+    'delivered' => 'បានផ្ញើរួច',
+    'returned' => 'បានត្រឡប់មកវិញ',
+    'details' => 'លំអិត',
+    'filter' => 'តម្រង',
+    'title_1' => 'title',
+    'topic _5' => 'topic ',
+
+
+    'id' => 'លេខសម្គាល់',          // ID
+    'action' => 'សកម្មភាព',         // Action
+    'image' => 'រូបភាព',           // Image
+    'from' => 'ពី',                 // From
+    'date' => 'កាលបរិច្ឆេទ',       // Date
+    'ocr_status' => 'ស្ថានភាព OCR', // OCR Status
+    'final_total' => 'សរុបចុងក្រោយ', // Final Total
+    'size' => 'ទំហំ',              // Size
+    'dimensions' => 'វិមាត្រ',       // Dimensions
+];

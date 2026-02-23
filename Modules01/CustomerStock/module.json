@@ -1,0 +1,15 @@
+{
+    "name": "CustomerStock",
+    "alias": "customerstock",
+    "description": "CustomerStock",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\CustomerStock\\Providers\\CustomerStockServiceProvider"
+    ],
+    "files": [],
+    "active": 1,
+    "order": 0,
+    "aliases": {},
+    "requires": []
+}

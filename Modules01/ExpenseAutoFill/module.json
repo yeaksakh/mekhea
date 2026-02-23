@@ -1,0 +1,15 @@
+{
+    "name": "ExpenseAutoFill",
+    "alias": "expenseautofill",
+    "description": "ExpenseAutoFill",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\ExpenseAutoFill\\Providers\\ExpenseAutoFillServiceProvider"
+    ],
+    "files": [],
+    "active": 1,
+    "order": 0,
+    "aliases": {},
+    "requires": []
+}

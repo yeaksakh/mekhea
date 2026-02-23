@@ -1,0 +1,16 @@
+[
+    {
+        "role": "user",
+        "text": "ghfg",
+        "timestamp": "06:18 PM",
+        "originalText": "ghfg",
+        "originalResponse": "\nIt seems like your message might be incomplete or unclear. Could you clarify or provide more details so I can assist you better? \ud83d\ude0a",
+        "versions": [],
+        "currentVersion": 0
+    },
+    {
+        "role": "ai",
+        "text": "\nIt seems like your message might be incomplete or unclear. Could you clarify or provide more details so I can assist you better? \ud83d\ude0a",
+        "timestamp": "06:18 PM"
+    }
+]

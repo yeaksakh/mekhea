@@ -1,0 +1,68 @@
+@inject('request', 'Illuminate\Http\Request')
+
+<!DOCTYPE html>
+<html lang="{{ app()->getLocale() }}" dir="{{in_array(session()->get('user.language', config('app.locale')), config('constants.langs_rtl')) ? 'rtl' : 'ltr'}}">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <!-- Tell the browser to be responsive to screen width -->
+        <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+
+        <!-- CSRF Token -->
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+
+        <title>@yield('title') - {{ Session::get('business.name') }}</title>
+        
+        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+        @include('layouts.partials.css')
+
+        @yield('css')
+    </head>
+
+    <body class="hold-transition skin-@if(!empty(session('business.theme_color'))){{session('business.theme_color')}}@else{{'blue-light'}}@endif layout-top-nav">
+        <div class="wrapper" style="background-color: white;">
+            <div class="content-wrapper">
+                <!-- Add currency related field-->
+                <input type="hidden" id="__code" value="{{session('currency')['code']}}">
+                <input type="hidden" id="__symbol" value="{{session('currency')['symbol']}}">
+                <input type="hidden" id="__thousand" value="{{session('currency')['thousand_separator']}}">
+                <input type="hidden" id="__decimal" value="{{session('currency')['decimal_separator']}}">
+                <input type="hidden" id="__symbol_placement" value="{{session('business.currency_symbol_placement')}}">
+                <input type="hidden" id="__precision" value="{{session('business.currency_precision', 2)}}">
+                <input type="hidden" id="__quantity_precision" value="{{session('business.quantity_precision', 2)}}">
+                <!-- End of currency related field-->
+
+                @if (session('status'))
+                    <input type="hidden" id="status_span" data-status="{{ session('status.success') }}" data-msg="{{ session('status.msg') }}">
+                @endif
+
+                @yield('content')
+
+                <div class='scrolltop no-print'>
+                    <div class='scroll icon'><i class="fas fa-angle-up"></i></div>
+                </div>
+            </div>
+
+            @include('crm::layouts.footer')
+
+            <audio id="success-audio">
+              <source src="{{ asset('/audio/success.ogg?v=' . $asset_v) }}" type="audio/ogg">
+              <source src="{{ asset('/audio/success.mp3?v=' . $asset_v) }}" type="audio/mpeg">
+            </audio>
+            <audio id="error-audio">
+              <source src="{{ asset('/audio/error.ogg?v=' . $asset_v) }}" type="audio/ogg">
+              <source src="{{ asset('/audio/error.mp3?v=' . $asset_v) }}" type="audio/mpeg">
+            </audio>
+            <audio id="warning-audio">
+              <source src="{{ asset('/audio/warning.ogg?v=' . $asset_v) }}" type="audio/ogg">
+              <source src="{{ asset('/audio/warning.mp3?v=' . $asset_v) }}" type="audio/mpeg">
+            </audio>
+        </div>
+
+        @include('layouts.partials.javascripts')
+        <div class="modal fade view_modal" tabindex="-1" role="dialog" 
+        aria-labelledby="gridSystemModalLabel"></div>
+    </body>
+</html>

@@ -1,0 +1,17 @@
+{
+    "name": "Visa",
+    "alias": "Visa",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Visa\\Providers\\VisaServiceProvider"
+    ],
+    "files": [],
+    "active": 1,
+    "order": 0,
+    "aliases": {},
+    "requires": []
+    
+    
+}

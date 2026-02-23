@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="km">
+@php
+    $registerDate = $contact->register_date ?? '2023-01-01';
+    $khmerMonths = [
+        1 => 'មករា', 2 => 'កុម្ភៈ', 3 => 'មីនា', 4 => 'មេសា', 5 => 'ឧសភា', 6 => 'មិថុនា',
+        7 => 'កក្កដា', 8 => 'សីហា', 9 => 'កញ្ញា', 10 => 'តុលា', 11 => 'វិច្ឆិកា', 12 => 'ធ្នូ'
+    ];
+    $date = Carbon::parse($registerDate);
+    $day = $date->day;
+    $month = $khmerMonths[$date->month];
+    $year = $date->year;
+@endphp
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>កិច្ចសន្យាផ្គត់ផ្គង់ទំនិញ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Moul&family=Siemreap&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f3f4f6;
+            font-family: 'Battambang', sans-serif;
+        }
+        .pc_unique_wrapper {
+            margin: 0 auto;
+            max-width: 21cm;
+            width: 100%;
+            overflow-x: hidden;
+            word-break: break-all;
+            text-align: center;
+        }
+        .pc_unique_wrapper .font-moul {
+            font-family: 'Moul', sans-serif;
+        }
+        .pc_unique_wrapper .print-container {
+            background-color: #ffffff;
+            padding: 1.5cm;
+            margin: 0.5rem auto;
+            max-width: 21cm;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .pc_unique_wrapper .container {
+            margin: 0 auto;
+            max-width: 100%;
+        }
+        .pc_unique_wrapper .text-center {
+            text-align: center;
+        }
+        .pc_unique_wrapper .mb-1 {
+            margin-bottom: 0.25rem;
+        }
+        .pc_unique_wrapper .mb-2 {
+            margin-bottom: 0.5rem;
+        }
+        .pc_unique_wrapper .mb-4 {
+            margin-bottom: 1rem;
+        }
+        .pc_unique_wrapper .my-2 {
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .pc_unique_wrapper .my-4 {
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .pc_unique_wrapper .my-8 {
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+        .pc_unique_wrapper .mt-2 {
+            margin-top: 0.5rem;
+        }
+        .pc_unique_wrapper .mt-4 {
+            margin-top: 1rem;
+        }
+        .pc_unique_wrapper .pb-2 {
+            padding-bottom: 0.5rem;
+        }
+        .pc_unique_wrapper .pl-5 {
+            padding-left: 1.25rem;
+            text-align: left;
+        }
+        .pc_unique_wrapper .font-bold {
+            font-weight: 700;
+        }
+        .pc_unique_wrapper .text-lg {
+            font-size: 1.125rem;
+        }
+        .pc_unique_wrapper .text-sm {
+            font-size: 0.875rem;
+        }
+        .pc_unique_wrapper .text-xl {
+            font-size: 1.25rem;
+        }
+        .pc_unique_wrapper .w-33 {
+            width: 33.333333%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .pc_unique_wrapper .w-42 {
+            width: 41.666667%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .pc_unique_wrapper .border-b {
+            border-bottom: 1px solid #000000;
+        }
+        .pc_unique_wrapper .flex {
+            display: flex;
+            justify-content: center;
+        }
+        .pc_unique_wrapper .justify-between {
+            justify-content: space-between;
+        }
+        .pc_unique_wrapper .print-button {
+            margin: 0.5rem auto;
+            padding: 0.5rem 1rem;
+            background-color: #3b82f6;
+            color: #ffffff;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            display: block;
+        }
+        .pc_unique_wrapper .print-button:hover {
+            background-color: #2563eb;
+        }
+        .pc_unique_wrapper .signature-section,
+        .pc_unique_wrapper .witness-section {
+            margin-left: auto;
+            margin-right: auto;
+            max-width: 21cm;
+        }
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .pc_unique_wrapper,
+            .pc_unique_wrapper #pc_unique_area,
+            .pc_unique_wrapper #pc_unique_area * {
+                visibility: visible;
+            }
+            .pc_unique_wrapper {
+                margin: 0 auto;
+                padding: 0;
+                text-align: center;
+            }
+            .pc_unique_wrapper #pc_unique_area {
+                position: static;
+                width: 100%;
+                max-width: 21cm;
+                margin: 0 auto;
+                padding: 1.5cm;
+                text-align: center;
+            }
+            .pc_unique_wrapper .print-button {
+                display: none;
+            }
+            .pc_unique_wrapper .pl-5 {
+                text-align: left;
+            }
+            @page {
+                size: A4;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="pc_unique_wrapper">
+        <button onclick="pcUniquePrintContract()" class="print-button">Print</button>
+        <div class="print-container" id="pc_unique_area">
+            <div class="text-center mb-4">
+                <div class="font-moul text-lg">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                <div class="font-moul text-sm">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                <div class="w-33 border-b my-4"></div>
+            </div>
+
+            <div class="container">
+                <div class="text-center font-bold text-xl mb-2">កិច្ចសន្យាផ្គត់ផ្គង់ទំនិញ</div>
+                <div class="text-center mb-4">Exclusive Sale Agreement</div>
+
+                <div class="text-center mb-4">យោងកិច្ចសន្យាលេខ៖ {{ $contact->contact_id ?? '........................' }}</div>
+                
+                <div class="my-2">
+                    កិច្ចសន្យានេះធ្វើឡើងនៅថ្ងៃទី {{ $day }} ខែ {{ $month }} ឆ្នាំ {{ $year }} នៅរាជធានីភ្នំពេញ
+                </div>
+
+                <div class="my-2">
+                    <div class="font-bold">រវាង</div>
+                    <div class="my-2">
+                        ក្រុមហ៊ុន <span class="font-bold">The Foxest Art Co., Ltd.</span> តំណាងដោយ លោកស្រី ឡុង ស៊ីចាន់ បន្ទាប់មកហៅថា <span class="font-bold">ភាគី "ក"</span>
+                    </div>
+                    <div class="font-bold mt-2">និង</div>
+                    <div class="my-2">
+                        {{ $contact->name ?? '........................' }} កាន់អត្តសញ្ញាណប័ណ្ណលេខ {{ $contact->id_proof_name ?? '........................' }} បន្ទាប់មកហៅថា <span class="font-bold">ភាគី "ខ"</span>
+                    </div>
+                </div>
+
+                <div class="my-2">
+                    ភាគីទាំងពីរបានព្រមព្រៀងគ្នាទាំងស្រុងលើលក្ខខណ្ឌ និងប្រការដូចបានចែងខាងក្រោម៖
+                </div>
+                <div class="font-bold my-2">គោលបំណង</div>
+                <div class="my-2">
+                    កិច្ចសន្យានេះមានគោលបំណងផ្តល់ភាពស្របច្បាប់នៃកិច្ចសន្យាធុរៈកិច្ច និងភាពទុកចិត្តគ្នារវាងភាគីទាំងពីរ ក្នុងកិច្ចការអាជីវកម្មដើម្បីផ្គត់ផ្គង់ទំនិញរវាងភាគីទាំងពីរ។
+                </div>
+                <div class="font-bold my-2">ផលិតផល</div>
+                <div class="pl-5 my-2">
+                    <span class="font-bold">ប្រការទី១</span> ៖ ភាគី"ក" សន្យាផ្គត់ផ្គង់ទំនិញដូចជា សាប៊ូ សម្ភារៈសម្អាត និងសម្ភារៈផ្ទះបាយផ្សេងៗ ទៀតដែលមានស្លាកយីហោ យក្សា (Yeaksa) ដែលបានចែកចាយដោយ ភាគី "ក" តាមការបញ្ជារទិញរបស់ ភាគី "ខ" និងយល់ស្របតាមលក្ខខណ្ឌទូទាត់ផ្សេងៗ។
+                </div>
+                <div class="pl-5 my-2">
+                    <span class="font-bold">ប្រការទី២</span> ៖ ភាគី”ខ” មិនអាចដាក់តាំង ឬលក់ផលិតផលសាប៊ូ សម្ភារៈសម្អាតផ្ទះបាយ និងសម្ភារៈសម្អាតផ្សេងៗ ទៀតក្រៅពីស្លាកយីហោ ដែលមានចែងក្នុងប្រការទី១ ដោយមិនមានការអនុញ្ញាតជាលាយលក្ខណ៏ អក្សរពី ភាគី”ក” បានឡើយ។
+                </div>
+                <div class="font-bold my-2">ស្លាកយីហោ</div>
+                <div class="pl-5 my-2">
+                    <span class="font-bold">ប្រការទី៣</span> ៖ ភាគី”ក” ផ្តល់សិទ្ធិ និងអនុញ្ញាតអោយ ភាគី”ខ” ប្រើប្រាស់ស្លាកយីហោ យក្សា (Yeaksa) ក្នុងការ តុបតែងហាងបោកអ៊ុត ឬហាងលក់ទំនិញ ក្នុងគោលបំណងផ្សព្វផ្សាយលក់ទំនិញរបស់ខ្លួន។
+                </div>
+                <div class="pl-5 my-2">
+                    <span class="font-bold">ប្រការទី៤</span> ៖ ភាគី”ខ” ត្រូវពិភាក្សា និងយល់ព្រមពី ភាគី”ក” ជាមុនសិន ក្នុងការប្រើប្រាស់ស្លាកយីហោ យក្សា (Yeaksa) និង ក្នុងការតុបតែង ឬកែប្រែ ( Decoration and Renovation) ហាងបោកអ៊ុត ឬ ហាងលក់ទំនិញ ដើម្បីធានាអោយបានត្រឹមត្រូវតាមស្តង់ដាររចនាបទស្លាកយីហោ។
+                </div>
+                <div class="pl-5 my-2">
+                    <span class="font-bold">ប្រការទី៥</span> ៖ ភាគី”ខ” អស់សិទ្ធិដោយស្វ័យប្រវត្តិក្នុងការប្រើប្រាស់ ស្លាកយីហោ ខាងលើនេះក្នុងករណីកិច្ចសន្យា នេះអស់សុពលភាព។
+                </div>
+                <div class="font-bold my-2">ការទូទាត់</div>
+                <div class="pl-5 my-2">
+                    <span class="font-bold">ប្រការទី៦</span> ៖ ភាគី”ខ” ត្រូវធ្វើការទូទាត់ទៅអោយ ភាគី”ក” តាមវិក្កយបត្រជាក់ស្តែង (Sale Invoices) គណនី ត្រូវទទួល (Account Receivable) និងតាមលក្ខខណ្ឌដែលបានព្រមព្រៀងដោយភាគីទាំងពីរ។ ការទូទាត់អាចធ្វើឡើងជាសាច់ប្រាក់សុទ្ធ ឬតាមប្រព័ន្ធធនាគារដែលបានផ្ដល់ដោយ ភាគី”ក”។
+                </div>
+                <div class="font-bold my-2">ភាពស្របច្បាប់ និងពន្ធអាករ</div>
+                <div class="pl-5 my-2">
+                    <span class="font-bold">ប្រការទី៧</span> ៖ ភាគី”ក” មិនទទួលខុសត្រូវរាល់សកម្មភាពអាជីវកម្មជាមួយអតិថិជនរបស់ ភាគី”ខ” ឬភាគីទី៣ និង ភាពស្របច្បាប់របស់ ភាគី”ខ” ទេ។ រាល់អាជ្ញាបណ្ណប្រកបអាជីវកម្មជាបន្ទុករបស់ ភាគី”ខ” ដោយ ស្របតាមបទដ្ឋាន គោលការណ៏ច្បាប់សហគ្រាស និងច្បាប់ពន្ធដារនៃព្រះរាជាណាចក្រកម្ពុជា។
+                </div>
+                <div class="pl-5 my-2">
+                    <span class="font-bold">ប្រការទី៨</span> ៖ រាល់ពន្ធអាករ រួមទាំងស្លាកយីហោ ផ្ទាំងផ្សាយពាណិជកម្ម និងសេវាសាធារណៈផ្សេងៗក្នុងតំបន់ ទាក់ទងនឹងសកម្មភាពអាជីវកម្មរបស់ ភាគី”ខ” ជាបន្ទុក និងការទទួលខុសត្រូវរបស់ ភាគី”ខ”។
+                </div>
+                <div class="font-bold my-2">ការចែកចាយ និងផ្សាយពាណិជ្ជកម្ម</div>
+                <div class="pl-5 my-2">
+                    <span class="font-bold">ប្រការទី៩</span> ៖ ភាគី”ខ” មានសិទ្ធិផ្សព្វផ្សាយផលិតផល និងស្លាកយីហោ យក្សា (Yeaksa) ក្នុងគោលបំណងជំរុញ ការលក់ទៅអតិថិជនគោលដៅ និងអាជីវកម្មបោកអ៊ុតរបស់ខ្លួន។
+                </div>
+                <div class="pl-5 my-2">
+                    <span class="font-bold">ប្រការទី១០</span> ៖ ភាគី”ខ” មានសិទ្ធិលក់ និងចែកចាយបន្ត ផលិតផល យក្សា (Yeaksa) ទៅអោយអតិថិជន និង ទីផ្សារគោលដៅរបស់ខ្លួន។
+                </div>
+                <div class="pl-5 my-2">
+                    <span class="font-bold">ប្រការទី១១</span> ៖ ភាគី”ខ” មានសិទ្ធិក្នុងការកំណត់តម្លៃលក់ទីផ្សារបន្តសមរម្យ (Markup Price) ទៅអោយអតិថិជន ផ្ទាល់ ប៉ុន្តែមិនអាចលក់អោយក្រោមតម្លៃទិញចូលពី ភាគី”ក” ជាដាច់ខាត។ ក្នុងករណីពិសេសណា មួយត្រូវមានការពិភាក្សា និងយល់ព្រមពី ភាគី”ក” ជាមុនសិន។
+                </div>
+                <div class="pl-5 my-2">
+                    <span class="font-bold">ប្រការទី១២</span> ៖ ទំនិញដែលបានទិញពី ភាគី”ក” មិនអាចប្តូរជាសាច់ប្រាក់វិញបានទេ ក្នុងករណីមានការប្តូរ ឬបញ្ជូន ទំនិញត្រលប់មកវិញត្រូវមានការយល់ព្រមពី ភាគី”ក” ជាមុនសិន។
+                </div>
+                <div class="font-bold my-2">ដោះស្រាយវិវាទ</div>
+                <div class="pl-5 my-2">
+                    <span class="font-bold">ប្រការទី១៣</span> ៖ រាល់ពេលមានជម្លោះ ឬវិវាទរវាង ភាគី”ក” និង ភាគី”ខ” ការអនុវត្តន៍កិច្ចសន្យានេះ ត្រូវដោះស្រាយ ដោយឈរលើគោលការណ៏សន្តិវិធី ដោយភាគីទាំងពីរមានសិទ្ធិក្នុងការជ្រើសរើសអ្នកសម្របសម្រួល កណ្តាល ឬអាជ្ញាធរពាក់ព័ន្ធ ដើម្បីដោះស្រាយវិវាទនេះបើសិនមានការចាំបាច់។
+                </div>
+                <div class="pl-5 my-2">
+                    <span class="font-bold">ប្រការទី១៤</span> ៖ ក្នុងករណីភាគីទាំងពីរមិនអាចសម្របសម្រួលគ្នាបាន ភាគីទាំងពីរយល់ព្រមដោះស្រាយតាមផ្លូវច្បាប់ ឬប្រព័ន្ធតុលាការនៃព្រះរាជាណាចក្រកម្ពុជា។
+                </div>
+                <div class="pl-5 my-2">
+                    <span class="font-bold">ប្រការទី១៥</span> ៖ រាល់ពេលមានជម្លោះ ឬវិវាទរវាង ភាគី”ក” និងភាគី”ខ” ការអនុវត្តន៍កិច្ចសន្យានេះ ដែលមានបញ្ហា ឬជម្លោះនៃគូភាគីទាំងពីរ ដែលបានដោះស្រាយតាមផ្លូវច្បាប់ ឬតាមតុលាការ ភាគីអ្នកចាញ់ក្តីត្រូវ ទទួលរ៉ាប់រងចំណាយទាំងអស់ លើថ្លៃសេវាដែលខាតបង់ ជម្ងឺចិត្ត និងរាល់ចំណាយផ្សេងៗដែលពាក់ ព័ន្ធ រឿងក្តីនេះរួមទាំងតម្លៃមេធាវី ទៅភាគីឈ្នះក្ដីវិញគ្រប់ចំនួន។
+                </div>
+                <div class="font-bold my-2">សុពលភាព សិទ្ឋិ និងកាតព្វកិច្ច</div>
+                <div class="pl-5 my-2">
+                    <span class="font-bold">ប្រការទី១៦</span> ៖ ភាគីទាំងពីរមានសិទ្ធិកែប្រែ ឬអាចបញ្ចប់កិច្ចសន្យានេះជាលាយលក្ខណ៏អក្សរ ដោយមានការយល់ ព្រមនិងជូនដំណឹងជាមុនយ៉ាងតិច៦០(ហុកសិប)ថ្ងៃ។
+                </div>
+                <div class="pl-5 my-2">
+                    <span class="font-bold">ប្រការទី១៧</span> ៖ ភាគី”ក” មានសិទ្ធិដោយឯកច្ឆន្ទក្នុងការបញ្ចប់កិច្ចសន្យានេះក្នុងករណី ភាគី”ខ” ឈប់ទិញ ផលិតផលពី ភាគី”ក” ក្នុងរយៈពេល ៣(បី)ខែ ជាប់គ្នា។
+                </div>
+                <div class="pl-5 my-2">
+                    <span class="font-bold">ប្រការទី១៨</span> ៖ ភាគីទាំងពីរយល់ព្រម និងទទួលយកទាំងស្រុងនូវខ្លឹមសារនៃកិច្ចសន្យាដោយមិនមានការបង្ខិតបង្ខំ ឡើយ ហើយកិច្ចសន្យានេះមានសុពលភាព ១(មួយ)ឆ្នាំម្ដង គិតចាប់ពីថ្ងៃចុះហត្ថលេខា ឬផ្ដិតស្នាម មេដៃតទៅ។
+                </div>
+
+                <div class="my-2">
+                    កិច្ចសន្យានេះធ្វើឡើងជា ២(ពីរ)ច្បាប់ដើម សម្រាប់ភាគីទាំងពីររក្សាទុក ។
+                </div>
+
+                <div class="signature-section flex justify-between mt-4">
+                    <div class="w-42 text-center">
+                        <div class="font-bold">ហត្ថលេខា និង ត្រាក្រុមហ៊ុន</div>
+                        <div class="border-b" style="margin-top: 8.5rem"></div>
+                        <div class="my-8">តំណាងក្រុមហ៊ុន ឡុង ស៊ីចាន់</div>
+                    </div>
+                    <div class="w-42 text-center">
+                        <div class="font-bold">ភាគី "ខ" ស្នាមមេដៃ និង ឈ្មោះ</div>
+                        <div class="border-b" style="margin-top: 8.5rem"></div>
+                        <div class="my-8">{{ $contact->name ?? '........................' }}</div>
+                    </div>
+                </div>
+
+                <div class="witness-section flex justify-between mt-4">
+                    {{-- <div class="w-42 text-center">
+                        <div>សាក្សី</div>
+                        <div class="border-b my-8"></div>
+                    </div> --}}
+                    <div class="w-42 text-center" style="margin-top: -15px">
+                        {{-- <div>សាក្សី</div> --}}
+                        {{-- <div class="border-b my-8"></div> --}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function pcUniquePrintContract() {
+        var iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+
+        var area = document.getElementById("pc_unique_area").cloneNode(true);
+
+        var html = `
+            <!DOCTYPE html>
+            <html lang="km">
+            <head>
+                <meta charset="UTF-8">
+                <title>Print Product Contract</title>
+                <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Moul&family=Siemreap&display=swap" rel="stylesheet">
+                <style>
+                    * {
+                        box-sizing: border-box;
+                    }
+                    body {
+                        margin: 0;
+                        padding: 0;
+                        font-family: 'Battambang', sans-serif;
+                    }
+                    .font-moul {
+                        font-family: 'Moul', sans-serif;
+                    }
+                    .print-container {
+                        max-width: 21cm;
+                        width: 100%;
+                        margin: 0 auto;
+                        padding: 1.5cm;
+                        background-color: #ffffff;
+                        overflow-x: hidden;
+                        word-break: break-all;
+                        text-align: center;
+                        zoom: 99%;
+                    }
+                    .container {
+                        margin: 0 auto;
+                        max-width: 100%;
+                    }
+                    .text-center {
+                        text-align: center;
+                    }
+                    .mb-1 {
+                        margin-bottom: 0.25rem;
+                    }
+                    .mb-2 {
+                        margin-bottom: 0.5rem;
+                    }
+                    .mb-4 {
+                        margin-bottom: 1rem;
+                    }
+                    .my-2 {
+                        margin-top: 0.5rem;
+                        margin-bottom: 0.5rem;
+                    }
+                    .my-4 {
+                        margin-top: 0.5rem;
+                        margin-bottom: 0.5rem;
+                    }
+                    .my-8 {
+                        margin-top: 2rem;
+                        margin-bottom: 2rem;
+                    }
+                    .mt-2 {
+                        margin-top: 0.5rem;
+                    }
+                    .mt-4 {
+                        margin-top: 1rem;
+                    }
+                    .pb-2 {
+                        padding-bottom: 0.5rem;
+                    }
+                    .pl-5 {
+                        padding-left: 1.25rem;
+                        text-align: left;
+                    }
+                    .font-bold {
+                        font-weight: 700;
+                    }
+                    .text-lg {
+                        font-size: 1.125rem;
+                    }
+                    .text-sm {
+                        font-size: 0.875rem;
+                    }
+                    .text-xl {
+                        font-size: 1.25rem;
+                    }
+                    .w-33 {
+                        width: 33.333333%;
+                        margin-left: auto;
+                        margin-right: auto;
+                    }
+                    .w-42 {
+                        width: 41.666667%;
+                        margin-left: auto;
+                        margin-right: auto;
+                    }
+                    .border-b {
+                        border-bottom: 1px solid #000000;
+                    }
+                    .flex {
+                        display: flex;
+                        justify-content: center;
+                    }
+                    .justify-between {
+                        justify-content: space-between;
+                    }
+                    .signature-section,
+                    .witness-section {
+                        margin-left: auto;
+                        margin-right: auto;
+                        max-width: 21cm;
+                    }
+                    @page {
+                        size: A4;
+                        margin-top: 45px;
+                        margin-inline: -20px;
+                    }
+                    @page:first {
+                        margin-top: -15px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div id="pc_unique_print_content"></div>
+            </body>
+            </html>
+        `;
+
+        var doc = iframe.contentWindow.document;
+        doc.open();
+        doc.write(html);
+        doc.close();
+
+        var printContent = doc.getElementById('pc_unique_print_content');
+        printContent.appendChild(area);
+
+        setTimeout(function() {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+            document.body.removeChild(iframe);
+        }, 500);
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+    "name": "News",
+    "alias": "news",
+    "description": "News",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\News\\Providers\\NewsServiceProvider"
+    ],
+    "files": [],
+    "active": 1,
+    "order": 0,
+    "aliases": {},
+    "requires": []
+}

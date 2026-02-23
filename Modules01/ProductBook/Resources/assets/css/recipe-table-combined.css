@@ -1,0 +1,236 @@
+/* DataTable Core Styles */
+table.dataTable,
+#recipe-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin: 0 !important;
+    font-size: 13px !important;
+    background-color: white !important;
+    table-layout: auto !important;
+    border: 1px solid #ddd !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+}
+
+/* Header and Cell Styles */
+table.dataTable thead th,
+#recipe-table thead th {
+    background-color: #f8f9fa !important;
+    border: 1px solid #ddd !important;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: #495057 !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+    white-space: nowrap !important;
+    line-height: 1.4 !important;
+}
+
+table.dataTable tbody td,
+#recipe-table tbody td {
+    border: 1px solid #ddd !important;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    color: #212529 !important;
+    background-color: white !important;
+    vertical-align: middle !important;
+    text-align: left !important;
+    line-height: 1.4 !important;
+    white-space: nowrap !important;
+}
+
+/* Number Column Alignment */
+table.dataTable tbody td.number,
+#recipe-table tbody td.number {
+    text-align: right !important;
+    font-family: monospace !important;
+}
+
+/* First Column Center Alignment */
+table.dataTable tbody td:first-child,
+#recipe-table tbody td:first-child {
+    text-align: center !important;
+}
+
+/* Footer Styles */
+table.dataTable tfoot th,
+#recipe-table tfoot th {
+    background-color: #f8f9fa !important;
+    border: 1px solid #ddd !important;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #495057 !important;
+    text-align: center !important;
+}
+
+/* Row Hover Effect */
+table.dataTable tbody tr:hover,
+#recipe-table tbody tr:hover {
+    background-color: #f8f9fa !important;
+}
+
+/* Table Container */
+.reusable-table-container {
+    max-height: 70vh;
+    overflow-y: auto;
+    overflow-x: auto;
+    margin: 16px;
+    margin-bottom: 100px;
+    background-color: white;
+    max-width: 100%;
+    position: relative;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+/* Custom Scrollbar */
+.reusable-table-container::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+}
+
+.reusable-table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.reusable-table-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.reusable-table-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* DataTable Controls */
+.top-controls {
+    display: flex !important;
+    align-items: center !important;
+    gap: 15px !important;
+    padding: 10px 0 !important;
+    border-bottom: 1px solid #dee2e6 !important;
+    margin-bottom: 1rem !important;
+    justify-content: space-between !important;
+}
+
+.controls-left, .controls-middle, .controls-right {
+    display: flex !important;
+    align-items: center !important;
+}
+
+.controls-middle {
+    flex-grow: 1 !important;
+    justify-content: center !important;
+}
+
+/* Search and Length Controls */
+.dataTables_filter, .dataTables_length {
+    margin: 0 !important;
+}
+
+.dataTables_filter label, .dataTables_length label {
+    font-size: 13px !important;
+    font-weight: normal !important;
+    margin: 0 !important;
+    color: #495057 !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.dataTables_filter input {
+    padding: 6px 12px !important;
+    border: 1px solid #ced4da !important;
+    border-radius: 4px !important;
+    font-size: 13px !important;
+    margin-left: 8px !important;
+    width: 200px !important;
+}
+
+.dataTables_length select {
+    padding: 4px 8px !important;
+    border: 1px solid #ced4da !important;
+    border-radius: 4px !important;
+    font-size: 13px !important;
+    margin: 0 8px !important;
+    min-width: 60px !important;
+}
+
+/* Profit Indicators */
+.profit-positive { color: #28a745 !important; }
+.profit-negative { color: #dc3545 !important; }
+
+/* Loading Indicator */
+#globalLoader {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: rgba(255, 255, 255, 0.8) !important;
+    display: none !important;
+    justify-content: center !important;
+    align-items: center !important;
+    z-index: 9999 !important;
+}
+
+#globalLoader.loader-active {
+    display: flex !important;
+}
+
+#globalLoader .loader-content {
+    text-align: center !important;
+}
+
+#globalLoader .spinner-border {
+    width: 3rem !important;
+    height: 3rem !important;
+}
+
+/* DataTable Buttons */
+.dt-buttons {
+    display: inline-flex !important;
+    gap: 5px !important;
+}
+
+.dt-button {
+    background-color: #f8f9fa !important;
+    color: #495057 !important;
+    border: 1px solid #ced4da !important;
+    padding: 6px 12px !important;
+    border-radius: 4px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out !important;
+    -webkit-appearance: none !important; /* Safari and Chrome */
+    -moz-appearance: none !important; /* Firefox */
+    appearance: none !important; /* Standard */
+}
+
+.dt-button:hover {
+    background-color: #e9ecef !important;
+    border-color: #adb5bd !important;
+}
+
+.dt-button:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25) !important;
+}
+
+.dt-button.active {
+    background-color: #007bff !important;
+    color: white !important;
+    border-color: #007bff !important;
+}
+
+
+
+
+
+
+ 
+ 

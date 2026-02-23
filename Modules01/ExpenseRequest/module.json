@@ -1,0 +1,15 @@
+{
+    "name": "ExpenseRequest",
+    "alias": "expenserequest",
+    "description": "ExpenseRequest",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\ExpenseRequest\\Providers\\ExpenseRequestServiceProvider"
+    ],
+    "files": [],
+    "active": 1,
+    "order": 0,
+    "aliases": {},
+    "requires": []
+}

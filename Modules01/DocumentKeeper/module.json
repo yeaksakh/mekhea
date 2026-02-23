@@ -1,0 +1,15 @@
+{
+    "name": "DocumentKeeper",
+    "alias": "documentkeeper",
+    "description": "DocumentKeeper",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\DocumentKeeper\\Providers\\DocumentKeeperServiceProvider"
+    ],
+    "files": [],
+    "active": 1,
+    "order": 0,
+    "aliases": {},
+    "requires": []
+}

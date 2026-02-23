@@ -1,0 +1,1099 @@
+<?php
+
+namespace Modules\AuditExpense\Http\Controllers;
+
+use DB;
+use App\User;
+use App\Account;
+use App\Contact;
+use App\TaxRate;
+use App\Business;
+use App\Category;
+use App\Transaction;
+use App\ExpenseCategory;
+use App\BusinessLocation;
+use App\Utils\ModuleUtil;
+use AWS\CRT\HTTP\Message;
+use App\AccountTransaction;
+use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use App\Utils\CashRegisterUtil;
+use App\Http\Controllers\Controller;
+use App\Events\ExpenseCreatedOrModified;
+use Yajra\DataTables\Facades\DataTables;
+use Modules\AuditExpense\Utils\TransactionUtil;
+
+class ExpenseController extends Controller
+{
+    /**
+     * Constructor
+     *
+     * @param  TransactionUtil  $transactionUtil
+     * @return void
+     */
+    public function __construct(TransactionUtil $transactionUtil, ModuleUtil $moduleUtil, CashRegisterUtil $cashRegisterUtil)
+    {
+        $this->transactionUtil = $transactionUtil;
+        $this->moduleUtil = $moduleUtil;
+        $this->dummyPaymentLine = [
+            'method' => 'cash',
+            'amount' => 0,
+            'note' => '',
+            'card_transaction_number' => '',
+            'card_number' => '',
+            'card_type' => '',
+            'card_holder_name' => '',
+            'card_month' => '',
+            'card_year' => '',
+            'card_security' => '',
+            'cheque_number' => '',
+            'bank_account_number' => '',
+            'is_return' => 0,
+            'transaction_no' => '',
+        ];
+        $this->cashRegisterUtil = $cashRegisterUtil;
+        $this->audit_status_colors = [
+            'pending' => 'bg-yellow',
+            'no_receipt' => 'bg-info',
+            'confused' => 'bg-blue',
+            'money' => 'bg-red',
+            'done' => 'bg-green',
+        ];
+    }
+
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+        if (! auth()->user()->can('all_expense.access') && ! auth()->user()->can('view_own_expense')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if (request()->ajax()) {
+            $business_id = request()->session()->get('user.business_id');
+            $audit_statuses = $this->transactionUtil->audit_statuses();
+
+            $expenses = Transaction::leftJoin('expense_categories AS ec', 'transactions.expense_category_id', '=', 'ec.id')
+                ->leftJoin('expense_categories AS esc', 'transactions.expense_sub_category_id', '=', 'esc.id')
+                ->join(
+                    'business_locations AS bl',
+                    'transactions.location_id',
+                    '=',
+                    'bl.id'
+                )
+                ->leftJoin('tax_rates as tr', 'transactions.tax_id', '=', 'tr.id')
+                ->leftJoin('users AS U', 'transactions.expense_for', '=', 'U.id')
+                ->leftJoin('users AS usr', 'transactions.created_by', '=', 'usr.id')
+                ->leftJoin('contacts AS c', 'transactions.contact_id', '=', 'c.id')
+                ->leftJoin(
+                    'transaction_payments AS TP',
+                    'transactions.id',
+                    '=',
+                    'TP.transaction_id'
+                )
+                ->where('transactions.business_id', $business_id)
+                ->where('transactions.status', 'final')
+                ->whereIn('transactions.type', ['expense'])
+                ->select(
+                    'transactions.id',
+                    'transactions.document',
+                    'transaction_date',
+                    'ref_no',
+                    'ec.name as category',
+                    'esc.name as sub_category',
+                    'payment_status',
+                    'additional_notes',
+                    'final_total',
+                    'transactions.is_recurring',
+                    'transactions.recur_interval',
+                    'transactions.recur_interval_type',
+                    'transactions.recur_repetitions',
+                    'transactions.subscription_repeat_on',
+                    'transactions.audit_status',
+                    'bl.name as location_name',
+                    DB::raw("CONCAT(COALESCE(U.surname, ''),' ',COALESCE(U.first_name, ''),' ',COALESCE(U.last_name,'')) as expense_for"),
+                    DB::raw("CONCAT(tr.name ,' (', tr.amount ,' )') as tax"),
+                    DB::raw('SUM(TP.amount) as amount_paid'),
+                    DB::raw("CONCAT(COALESCE(usr.surname, ''),' ',COALESCE(usr.first_name, ''),' ',COALESCE(usr.last_name,'')) as added_by"),
+                    'transactions.recur_parent_id',
+                    'c.name as contact_name',
+                    'transactions.type'
+                )
+                ->with(['recurring_parent'])
+                ->groupBy('transactions.id');
+
+
+            //Add condition for expense for,used in sales representative expense report & list of expense
+            if (request()->has('expense_for')) {
+                $expense_for = request()->get('expense_for');
+                if (! empty($expense_for)) {
+                    $expenses->where('transactions.expense_for', $expense_for);
+                }
+            }
+
+            if (request()->has('contact_id')) {
+                $contact_id = request()->get('contact_id');
+                if (! empty($contact_id)) {
+                    $expenses->where('transactions.contact_id', $contact_id);
+                }
+            }
+
+            //Add condition for location,used in sales representative expense report & list of expense
+            if (request()->has('location_id')) {
+                $location_id = request()->get('location_id');
+                if (! empty($location_id)) {
+                    $expenses->where('transactions.location_id', $location_id);
+                }
+            }
+
+            //Add condition for expense category, used in list of expense,
+            if (request()->has('expense_category_id')) {
+                $expense_category_id = request()->get('expense_category_id');
+                if (! empty($expense_category_id)) {
+                    $expenses->where('transactions.expense_category_id', $expense_category_id);
+                }
+            }
+
+            //Add condition for expense sub category, used in list of expense,
+            if (request()->has('expense_sub_category_id')) {
+                $expense_sub_category_id = request()->get('expense_sub_category_id');
+                if (! empty($expense_sub_category_id)) {
+                    $expenses->where('transactions.expense_sub_category_id', $expense_sub_category_id);
+                }
+            }
+
+            //Add condition for start and end date filter, uses in sales representative expense report & list of expense
+            if (! empty(request()->start_date) && ! empty(request()->end_date)) {
+                $start = request()->start_date;
+                $end = request()->end_date;
+                $expenses->whereDate('transaction_date', '>=', $start)
+                    ->whereDate('transaction_date', '<=', $end);
+            }
+
+            $permitted_locations = auth()->user()->permitted_locations();
+            if ($permitted_locations != 'all') {
+                $expenses->whereIn('transactions.location_id', $permitted_locations);
+            }
+
+            //Add condition for payment status for the list of expense
+            if (request()->has('payment_status')) {
+                $payment_status = request()->get('payment_status');
+                if (! empty($payment_status)) {
+                    $expenses->where('transactions.payment_status', $payment_status);
+                }
+            }
+
+            if (request()->has('audit_status')) {
+                $status = request()->get('audit_status');
+                if (! empty($status)) {
+                    $expenses->where('transactions.audit_status', $status);
+                }
+            }
+
+            $is_admin = $this->moduleUtil->is_admin(auth()->user(), $business_id);
+            if (! $is_admin && ! auth()->user()->can('all_expense.access')) {
+                $user_id = auth()->user()->id;
+                $expenses->where(function ($query) use ($user_id) {
+                    $query->where('transactions.created_by', $user_id)
+                        ->orWhere('transactions.expense_for', $user_id);
+                });
+            }
+
+            return Datatables::of($expenses)
+                ->addColumn(
+                    'action',
+                    '<div class="btn-group">
+                        <button type="button" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline  tw-dw-btn-success tw-w-max dropdown-toggle" 
+                            data-toggle="dropdown" aria-expanded="false"> @lang("")<span class="caret"></span><span class="sr-only">Toggle Dropdown
+                                </span>
+                        </button>
+                    <ul class="dropdown-menu dropdown-menu-left" role="menu">
+                    <li>
+                        <a href="{{action(\'Modules\AuditExpense\Http\Controllers\ExpenseController@show\', [$id])}}" class="view_expent_show_modal">
+                        <i class="fas fa-eye"n
+                        style="color: blue; border: 1px solid blue; padding: 5px; border-radius: 10px;"></i> 
+                        @lang("messages.view")
+                        </a>
+                        </li>
+                    @if(auth()->user()->can("expense.edit"))
+                        <li>
+                        <a href="{{action(\'Modules\AuditExpense\Http\Controllers\ExpenseController@edit\', [$id])}}">
+                        <i class="glyphicon glyphicon-edit"
+                        style="color: orange; border: 1px solid orange; padding: 5px; border-radius: 10px;"></i>  
+                        @lang("messages.edit")
+                        </a>
+                        </li>
+                    @endif
+                    @if($document)
+                        <li>
+                        <a href="{{ url(\'uploads/documents/\' . $document)}}" download="">
+                        <i class="fa fa-download" aria-hidden="true"
+                        style="color: gray; border: 1px solid gray; padding: 5px; border-radius: 10px;"></i> 
+                        
+                        @lang("purchase.download_document")</a>
+                        </li>
+                        @if(isFileImage($document))
+                            <li>
+                            <a href="#" data-href="{{ url(\'uploads/documents/\' . $document)}}" class="view_uploaded_document">
+                            <i class="fas fa-file-image" aria-hidden="true"
+                            style="color: gray; border: 1px solid gray; padding: 5px; border-radius: 10px;"></i> 
+                            @lang("lang_v1.view_document")</a></li>
+                        @endif
+                    @endif
+                    @if(auth()->user()->can("expense.delete"))
+                        <li>
+                        <a href="#" data-href="{{action(\'Modules\AuditExpense\Http\Controllers\ExpenseController@destroy\', [$id])}}" class="delete_expense">
+                        <i class="glyphicon glyphicon-trash"
+                        style="color: red; border: 1px solid red; padding: 5px; border-radius: 10px;"></i> 
+                        @lang("messages.delete")
+                        </a>
+                        </li>
+                    @endif
+                    <li class="divider"></li> 
+                    @if($payment_status != "paid")
+                        <li>
+                        <a href="{{action([\App\Http\Controllers\TransactionPaymentController::class, \'addPayment\'], [$id])}}" class="add_payment_modal">
+                        <i class="fas fa-money-bill-alt" aria-hidden="true"></i> 
+                        @lang("purchase.add_payment")
+                        </a>
+                        </li>
+                    @endif
+                    <li>
+                    <a href="{{action([\App\Http\Controllers\TransactionPaymentController::class, \'show\'], [$id])}}" class="view_payment_modal">
+                    <i class="fas fa-comment-dollar" aria-hidden="true" 
+                    style="color: green; border: 1px solid green; padding: 5px; border-radius: 10px;"></i> 
+                    @lang("purchase.view_payments")
+                    </a>
+                    </li>
+                    </ul>
+                    </div>'
+                )
+                ->editColumn(
+                    'final_total',
+                    '<span class="display_currency final-total" data-currency_symbol="true" data-orig-value="@if($type=="expense_refund"){{-1 * $final_total}}@else{{$final_total}}@endif">@if($type=="expense_refund") - @endif @format_currency($final_total)</span>'
+                )
+                ->editColumn('transaction_date', '{{@format_datetime($transaction_date)}}')
+                ->editColumn(
+                    'payment_status',
+                    '<a href="{{ action([\App\Http\Controllers\TransactionPaymentController::class, \'show\'], [$id])}}" class="view_payment_modal payment-status" data-orig-value="{{$payment_status}}" data-status-name="{{__(\'lang_v1.\' . $payment_status)}}"><span class="label @payment_status($payment_status)">{{__(\'lang_v1.\' . $payment_status)}}
+                        </span></a>'
+                )
+                ->addColumn('payment_due', function ($row) {
+                    $due = $row->final_total - $row->amount_paid;
+
+                    if ($row->type == 'expense_refund') {
+                        $due = -1 * $due;
+                    }
+
+                    return '<span class="display_currency payment_due" data-currency_symbol="true" data-orig-value="' . $due . '">' . $this->transactionUtil->num_f($due, true) . '</span>';
+                })
+                ->addColumn('recur_details', function ($row) {
+                    $details = '<small>';
+                    if ($row->is_recurring == 1) {
+                        $type = $row->recur_interval == 1 ? Str::singular(__('lang_v1.' . $row->recur_interval_type)) : __('lang_v1.' . $row->recur_interval_type);
+                        $recur_interval = $row->recur_interval . $type;
+
+                        $details .= __('lang_v1.recur_interval') . ': ' . $recur_interval;
+                        if (! empty($row->recur_repetitions)) {
+                            $details .= ', ' . __('lang_v1.no_of_repetitions') . ': ' . $row->recur_repetitions;
+                        }
+                        if ($row->recur_interval_type == 'months' && ! empty($row->subscription_repeat_on)) {
+                            $details .= '<br><small class="text-muted">' .
+                                __('lang_v1.repeat_on') . ': ' . str_ordinal($row->subscription_repeat_on);
+                        }
+                    } elseif (! empty($row->recur_parent_id)) {
+                        $details .= __('lang_v1.recurred_from') . ': ' . $row->recurring_parent->ref_no;
+                    }
+                    $details .= '</small>';
+
+                    return $details;
+                })
+
+                ->editColumn('ref_no', function ($row) {
+                    $ref_no = $row->ref_no;
+                    if (! empty($row->is_recurring)) {
+                        $ref_no .= ' &nbsp;<small class="label bg-red label-round no-print" title="' . __('lang_v1.recurring_expense') . '"><i class="fas fa-recycle"></i></small>';
+                    }
+
+                    if (! empty($row->recur_parent_id)) {
+                        $ref_no .= ' &nbsp;<small class="label bg-info label-round no-print" title="' . __('lang_v1.generated_recurring_expense') . '"><i class="fas fa-recycle"></i></small>';
+                    }
+
+                    if ($row->type == 'expense_refund') {
+                        $ref_no .= ' &nbsp;<small class="label bg-gray">' . __('lang_v1.refund') . '</small>';
+                    }
+
+                    return $ref_no;
+                })
+                ->editColumn('audit_status', function ($row) use ($audit_statuses) {
+                    $status_color = ! empty($this->audit_status_colors[$row->audit_status]) ? $this->audit_status_colors[$row->audit_status] : 'bg-gray';
+                    $status = ! empty($row->audit_status) ? '<a href="#" class="btn-modal" data-href="' . action([\Modules\AuditExpense\Http\Controllers\ExpenseController::class, 'editAudit'], [$row->id]) . '" data-container=".view_modal"><span class="label ' . $status_color . '">' . $audit_statuses[$row->audit_status] . '</span></a>' : '';
+
+                    return $status;
+                })
+                ->rawColumns(['final_total', 'action', 'payment_status', 'audit_status', 'payment_due', 'ref_no', 'recur_details'])
+                ->make(true);
+        }
+
+        $business_id = request()->session()->get('user.business_id');
+
+        $categories = ExpenseCategory::where('business_id', $business_id)
+            ->whereNull('parent_id')
+            ->pluck('name', 'id');
+
+        $users = User::forDropdown($business_id, false, true, true);
+
+        $business_locations = BusinessLocation::forDropdown($business_id, true);
+
+        $contacts = Contact::contactDropdown($business_id, false, false);
+
+        $sub_categories = ExpenseCategory::where('business_id', $business_id)
+            ->whereNotNull('parent_id')
+            ->pluck('name', 'id')
+            ->toArray();
+        $audit_statuses = $this->transactionUtil->audit_statuses();
+
+        return view('auditexpense::expense.index')
+            ->with(compact('categories', 'business_locations', 'users', 'audit_statuses', 'contacts', 'sub_categories'));
+    }
+
+    public function indexExpenseRequest()
+    {
+        if (! auth()->user()->can('all_expense.access') && ! auth()->user()->can('view_own_expense')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if (request()->ajax()) {
+
+            $business_id = request()->session()->get('user.business_id');
+            $audit_statuses = $this->transactionUtil->audit_statuses();
+
+            $expenses = Transaction::leftJoin('expense_categories AS ec', 'transactions.expense_category_id', '=', 'ec.id')
+                ->leftJoin('expense_categories AS esc', 'transactions.expense_sub_category_id', '=', 'esc.id')
+                ->join(
+                    'business_locations AS bl',
+                    'transactions.location_id',
+                    '=',
+                    'bl.id'
+                )
+                ->leftJoin('tax_rates as tr', 'transactions.tax_id', '=', 'tr.id')
+                ->leftJoin('users AS U', 'transactions.expense_for', '=', 'U.id')
+                ->leftJoin('users AS usr', 'transactions.created_by', '=', 'usr.id')
+                ->leftJoin('contacts AS c', 'transactions.contact_id', '=', 'c.id')
+                ->leftJoin(
+                    'transaction_payments AS TP',
+                    'transactions.id',
+                    '=',
+                    'TP.transaction_id'
+                )
+                ->where('transactions.business_id', $business_id)
+                ->where(function ($query) {
+                    $query->where(function ($q) {
+                        $q->where('transactions.type', 'expense')
+                            ->where('transactions.status', 'final');
+                    })->orWhere(function ($q) {
+                        $q->whereIn('transactions.type', ['expense_request', 'expense_refund'])
+                            ->where('transactions.status', 'draft');
+                    });
+                })
+                ->whereIn('transactions.type', ['expense', 'expense_request', 'expense_refund'])
+                ->select(
+                    'transactions.id',
+                    'transactions.document',
+                    'transaction_date',
+                    'ref_no',
+                    'ec.name as category',
+                    'esc.name as sub_category',
+                    'payment_status',
+                    'additional_notes',
+                    'final_total',
+                    'transactions.is_recurring',
+                    'transactions.recur_interval',
+                    'transactions.recur_interval_type',
+                    'transactions.recur_repetitions',
+                    'transactions.subscription_repeat_on',
+                    'transactions.audit_status',
+                    'bl.name as location_name',
+                    'transactions.status',
+                    DB::raw("CONCAT(COALESCE(U.surname, ''),' ',COALESCE(U.first_name, ''),' ',COALESCE(U.last_name,'')) as expense_for"),
+                    DB::raw("CONCAT(tr.name ,' (', tr.amount ,' )') as tax"),
+                    DB::raw('SUM(TP.amount) as amount_paid'),
+                    DB::raw("CONCAT(COALESCE(usr.surname, ''),' ',COALESCE(usr.first_name, ''),' ',COALESCE(usr.last_name,'')) as added_by"),
+                    'transactions.recur_parent_id',
+                    'c.name as contact_name',
+                    'transactions.type'
+                )
+                ->with(['recurring_parent'])
+                ->groupBy('transactions.id');
+
+
+            //Add condition for expense for,used in sales representative expense report & list of expense
+            if (request()->has('expense_for')) {
+                $expense_for = request()->get('expense_for');
+                if (! empty($expense_for)) {
+                    $expenses->where('transactions.expense_for', $expense_for);
+                }
+            }
+
+            if (request()->has('contact_id')) {
+                $contact_id = request()->get('contact_id');
+                if (! empty($contact_id)) {
+                    $expenses->where('transactions.contact_id', $contact_id);
+                }
+            }
+
+            //Add condition for location,used in sales representative expense report & list of expense
+            if (request()->has('location_id')) {
+                $location_id = request()->get('location_id');
+                if (! empty($location_id)) {
+                    $expenses->where('transactions.location_id', $location_id);
+                }
+            }
+
+            //Add condition for expense category, used in list of expense,
+            if (request()->has('expense_category_id')) {
+                $expense_category_id = request()->get('expense_category_id');
+                if (! empty($expense_category_id)) {
+                    $expenses->where('transactions.expense_category_id', $expense_category_id);
+                }
+            }
+
+            //Add condition for expense sub category, used in list of expense,
+            if (request()->has('expense_sub_category_id')) {
+                $expense_sub_category_id = request()->get('expense_sub_category_id');
+                if (! empty($expense_sub_category_id)) {
+                    $expenses->where('transactions.expense_sub_category_id', $expense_sub_category_id);
+                }
+            }
+
+            //Add condition for start and end date filter, uses in sales representative expense report & list of expense
+            if (! empty(request()->start_date) && ! empty(request()->end_date)) {
+                $start = request()->start_date;
+                $end = request()->end_date;
+                $expenses->whereDate('transaction_date', '>=', $start)
+                    ->whereDate('transaction_date', '<=', $end);
+            }
+
+            $permitted_locations = auth()->user()->permitted_locations();
+            if ($permitted_locations != 'all') {
+                $expenses->whereIn('transactions.location_id', $permitted_locations);
+            }
+
+            //Add condition for payment status for the list of expense
+            if (request()->has('payment_status')) {
+                $payment_status = request()->get('payment_status');
+                if (! empty($payment_status)) {
+                    $expenses->where('transactions.payment_status', $payment_status);
+                }
+            }
+
+            if (request()->has('audit_status')) {
+                $status = request()->get('audit_status');
+                if (! empty($status)) {
+                    $expenses->where('transactions.audit_status', $status);
+                }
+            }
+
+            $is_admin = $this->moduleUtil->is_admin(auth()->user(), $business_id);
+            if (! $is_admin && ! auth()->user()->can('all_expense.access')) {
+                $user_id = auth()->user()->id;
+                $expenses->where(function ($query) use ($user_id) {
+                    $query->where('transactions.created_by', $user_id)
+                        ->orWhere('transactions.expense_for', $user_id);
+                });
+            }
+
+            return Datatables::of($expenses)
+                ->addColumn(
+                    'action',
+                    '<div class="btn-group">
+                        <button type="button" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline  tw-dw-btn-success tw-w-max dropdown-toggle" 
+                            data-toggle="dropdown" aria-expanded="false"> @lang("")<span class="caret"></span><span class="sr-only">Toggle Dropdown
+                                </span>
+                        </button>
+                    <ul class="dropdown-menu dropdown-menu-left" role="menu">
+                    <li>
+                        <a href="{{action(\'Modules\AuditExpense\Http\Controllers\ExpenseController@show\', [$id])}}" class="view_expent_show_modal">
+                        <i class="fas fa-eye"n
+                        style="color: blue; border: 1px solid blue; padding: 5px; border-radius: 10px;"></i> 
+                        @lang("messages.view")
+                        </a>
+                        </li>
+                    @if(auth()->user()->can("expense.edit"))
+                        <li>
+                        <a href="{{action(\'Modules\AuditExpense\Http\Controllers\ExpenseController@edit\', [$id])}}">
+                        <i class="glyphicon glyphicon-edit"n
+                        style="color: orange; border: 1px solid orange; padding: 5px; border-radius: 10px;"></i> 
+                        @lang("messages.edit")
+                        </a>
+                        </li>
+                    @endif
+                    @if($document)
+                        <li>
+                        <a href="{{ url(\'uploads/documents/\' . $document)}}" 
+                        download=""><i class="fa fa-download" aria-hidden="true"
+                        style="color: gray; border: 1px solid gray; padding: 5px; border-radius: 10px;"></i>  
+                        @lang("purchase.download_document")
+                        </a>
+                        </li>
+                        @if(isFileImage($document))
+                            <li>
+                            <a href="#" data-href="{{ url(\'uploads/documents/\' . $document)}}" class="view_uploaded_document">
+                            <i class="fas fa-file-image" aria-hidden="true"
+                            style="color: gray; border: 1px solid gray; padding: 5px; border-radius: 10px;"></i> 
+                            @lang("lang_v1.view_document")
+                            </a>
+                            </li>
+                        @endif
+                    @endif
+                    @if(auth()->user()->can("expense.delete"))
+                        <li>
+                        <a href="#" data-href="{{action(\'Modules\AuditExpense\Http\Controllers\ExpenseController@destroy\', [$id])}}" class="delete_expense">
+                        <i class="glyphicon glyphicon-trash"
+                        style="color: red; border: 1px solid red; padding: 5px; border-radius: 10px;"></i>  
+                        @lang("messages.delete")
+                        </a>
+                        </li>
+                    @endif
+                    <li class="divider"></li> 
+                    @if($payment_status != "paid")
+                        <li>
+                        <a href="{{action([\App\Http\Controllers\TransactionPaymentController::class, \'addPayment\'], [$id])}}" class="add_payment_modal">
+                        <i class="fas fa-money-bill-alt" aria-hidden="true"style="color: green; border: 1px solid green; padding: 5px; border-radius: 10px;"></i> 
+                        @lang("purchase.add_payment")
+                        </a>
+                        </li>
+                    @endif
+                    <li>
+                    <a href="{{action([\App\Http\Controllers\TransactionPaymentController::class, \'show\'], [$id])}}" class="view_payment_modal">
+                    <i class="fas fa-comment-dollar" aria-hidden="true" 
+                    style="color: green; border: 1px solid green; padding: 5px; border-radius: 10px;"></i>  
+                    @lang("purchase.view_payments")
+                    </a>
+                    </li>
+                    </ul>
+                    </div>'
+                )
+                ->editColumn(
+                    'final_total',
+                    '<span class="display_currency final-total" data-currency_symbol="true" data-orig-value="@if($type=="expense_refund"){{-1 * $final_total}}@else{{$final_total}}@endif">@if($type=="expense_refund") - @endif @format_currency($final_total)</span>'
+                )
+                ->editColumn('transaction_date', '{{@format_datetime($transaction_date)}}')
+                ->editColumn(
+                    'payment_status',
+                    '<a href="{{ action([\App\Http\Controllers\TransactionPaymentController::class, \'show\'], [$id])}}" class="view_payment_modal payment-status" data-orig-value="{{$payment_status}}" data-status-name="{{__(\'lang_v1.\' . $payment_status)}}"><span class="label @payment_status($payment_status)">{{__(\'lang_v1.\' . $payment_status)}}
+                        </span></a>'
+                )
+                ->addColumn('payment_due', function ($row) {
+                    $due = $row->final_total - $row->amount_paid;
+
+                    if ($row->type == 'expense_refund') {
+                        $due = -1 * $due;
+                    }
+
+                    return '<span class="display_currency payment_due" data-currency_symbol="true" data-orig-value="' . $due . '">' . $this->transactionUtil->num_f($due, true) . '</span>';
+                })
+                ->addColumn('recur_details', function ($row) {
+                    $details = '<small>';
+                    if ($row->is_recurring == 1) {
+                        $type = $row->recur_interval == 1 ? Str::singular(__('lang_v1.' . $row->recur_interval_type)) : __('lang_v1.' . $row->recur_interval_type);
+                        $recur_interval = $row->recur_interval . $type;
+
+                        $details .= __('lang_v1.recur_interval') . ': ' . $recur_interval;
+                        if (! empty($row->recur_repetitions)) {
+                            $details .= ', ' . __('lang_v1.no_of_repetitions') . ': ' . $row->recur_repetitions;
+                        }
+                        if ($row->recur_interval_type == 'months' && ! empty($row->subscription_repeat_on)) {
+                            $details .= '<br><small class="text-muted">' .
+                                __('lang_v1.repeat_on') . ': ' . str_ordinal($row->subscription_repeat_on);
+                        }
+                    } elseif (! empty($row->recur_parent_id)) {
+                        $details .= __('lang_v1.recurred_from') . ': ' . $row->recurring_parent->ref_no;
+                    }
+                    $details .= '</small>';
+
+                    return $details;
+                })
+
+                ->editColumn('ref_no', function ($row) {
+                    $ref_no = $row->ref_no;
+                    if (! empty($row->is_recurring)) {
+                        $ref_no .= ' &nbsp;<small class="label bg-red label-round no-print" title="' . __('lang_v1.recurring_expense') . '"><i class="fas fa-recycle"></i></small>';
+                    }
+
+                    if (! empty($row->recur_parent_id)) {
+                        $ref_no .= ' &nbsp;<small class="label bg-info label-round no-print" title="' . __('lang_v1.generated_recurring_expense') . '"><i class="fas fa-recycle"></i></small>';
+                    }
+
+                    if ($row->type == 'expense_refund') {
+                        $ref_no .= ' &nbsp;<small class="label bg-gray">' . __('lang_v1.refund') . '</small>';
+                    }
+
+                    return $ref_no;
+                })
+                ->editColumn('audit_status', function ($row) use ($audit_statuses) {
+                    $status_color = ! empty($this->audit_status_colors[$row->audit_status]) ? $this->audit_status_colors[$row->audit_status] : 'bg-gray';
+                    $status = ! empty($row->audit_status) ? '<a href="#" class="btn-modal" data-href="' . action([\Modules\AuditExpense\Http\Controllers\ExpenseController::class, 'editAudit'], [$row->id]) . '" data-container=".view_modal"><span class="label ' . $status_color . '">' . $audit_statuses[$row->audit_status] . '</span></a>' : '';
+
+                    return $status;
+                })
+                ->editColumn('status', function ($row) {
+                    if (!empty($row->status)) {
+                        $statusText = '';
+                        $colorClass = '';
+                        $html = '';
+
+                        // Determine the status text and color based on the status
+                        if ($row->status === 'final') {
+                            $statusText = 'approve';
+                            $colorClass = 'bg-green'; // Class for green text
+                            // Return just the span without the link for 'final' status
+                            $html = '<span class="label ' . $colorClass . '">' . e($statusText) . '</span>';
+                        } elseif ($row->status === 'draft') {
+                            $statusText = 'non-approve';
+                            $colorClass = 'bg-yellow'; // Class for yellow text
+                            // Keep the link for 'draft' status
+                            $html = '<a href="#" class="btn-modal" data-href="' . action([\Modules\AuditExpense\Http\Controllers\ExpenseController::class, 'approveExpenseRequest'], [$row->id]) . '" data-container=".view_modal">
+                                        <span class="label ' . $colorClass . '">' . e($statusText) . '</span>
+                                    </a>';
+                        }
+
+                        return $html;
+                    }
+
+                    return '';
+                })
+                ->rawColumns(['final_total', 'action', 'payment_status', 'audit_status', 'payment_due', 'ref_no', 'recur_details', 'status'])
+                ->make(true);
+        }
+
+        $business_id = request()->session()->get('user.business_id');
+
+        $categories = ExpenseCategory::where('business_id', $business_id)
+            ->whereNull('parent_id')
+            ->pluck('name', 'id');
+
+        $users = User::forDropdown($business_id, false, true, true);
+
+        $business_locations = BusinessLocation::forDropdown($business_id, true);
+
+        $contacts = Contact::contactDropdown($business_id, false, false);
+
+        $sub_categories = ExpenseCategory::where('business_id', $business_id)
+            ->whereNotNull('parent_id')
+            ->pluck('name', 'id')
+            ->toArray();
+        $audit_statuses = $this->transactionUtil->audit_statuses();
+
+        return view('expense_request.index')
+            ->with(compact('categories', 'business_locations', 'users', 'audit_statuses', 'contacts', 'sub_categories'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function editAudit($id)
+    {
+
+        $business_id = request()->session()->get('user.business_id');
+
+        $transaction = Transaction::where('business_id', $business_id)
+            ->findorfail($id);
+
+        $audit_statuses = $this->transactionUtil->audit_statuses();
+        return view('auditexpense::expense.partials.edit_audit')
+            ->with(compact('transaction', 'audit_statuses'));
+    }
+    public function approveExpenseRequest($id)
+    {
+        $business_id = request()->session()->get('user.business_id');
+
+        $transaction = Transaction::where('business_id', $business_id)
+            ->findorfail($id);
+
+        return view('auditexpense::expense.partials.approve_expense')
+            ->with(compact('transaction'));
+    }
+    public function updateApproveExpenseRequest(Request $request, $id)
+    {
+        try {
+            $request->validate([
+                'status' => 'required|in:draft,final',
+            ]);
+
+            $business_id = request()->session()->get('user.business_id');
+
+            $transaction = Transaction::where('business_id', $business_id)
+                ->findorfail($id);
+            if ($request->input('status') == 'final') {
+                $transaction->type = 'expense';
+            }
+            $transaction->status = $request->input('status');
+            $transaction->save();
+
+            $output = [
+                'success' => 1,
+                'msg' => trans('lang_v1.updated_success'),
+            ];
+        } catch (\Exception $e) {
+            $output = [
+                'success' => 0,
+                'msg' => trans('messages.something_went_wrong'),
+            ];
+        }
+        return redirect()->back()->with($output);
+    }
+    public function updateAudit(Request $request, $id)
+    {
+
+        try {
+            $input = $request->only([
+                'audit_status',
+            ]);
+
+            $business_id = request()->session()->get('user.business_id');
+
+            $transaction = Transaction::where('business_id', $business_id)
+                ->findorfail($id);
+
+            $transaction->update($input);
+
+            $output = [
+                'success' => 1,
+                'msg' => trans('lang_v1.updated_success'),
+            ];
+        } catch (\Exception $e) {
+            $output = [
+                'success' => 0,
+                'msg' => trans('messages.something_went_wrong'),
+            ];
+        }
+
+        return $output;
+    }
+
+
+
+    public function create()
+    {
+        if (! auth()->user()->can('expense.add')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = request()->session()->get('user.business_id');
+
+        //Check if subscribed or not
+        if (! $this->moduleUtil->isSubscribed($business_id)) {
+            return $this->moduleUtil->expiredResponse(action([\Modules\AuditExpense\Http\Controllers\ExpenseController::class, 'index']));
+        }
+
+        $business_locations = BusinessLocation::forDropdown($business_id, false, true);
+
+        $bl_attributes = $business_locations['attributes'];
+        $business_locations = $business_locations['locations'];
+
+        $expense_categories = ExpenseCategory::where('business_id', $business_id)
+            ->whereNull('parent_id')
+            ->pluck('name', 'id');
+        $users = User::forDropdown($business_id, true, true);
+
+        $taxes = TaxRate::forBusinessDropdown($business_id, true, true);
+
+        $payment_line = $this->dummyPaymentLine;
+
+        $payment_types = $this->transactionUtil->payment_types(null, false, $business_id);
+
+        $contacts = Contact::where('business_id', $business_id)
+        ->where('type', 'supplier')
+        ->active()
+        ->whereNotNull('name')
+        ->get(['id', 'name', 'supplier_business_name'])
+        ->mapWithKeys(function ($contact) {
+            $supplier = $contact->name . ' (' . ($contact->supplier_business_name ?? 'N/A') . ')';
+            return [$contact->id => $supplier];
+        })
+        ->toArray();
+
+        //Accounts
+        $accounts = [];
+        if ($this->moduleUtil->isModuleEnabled('account')) {
+            $accounts = Account::forDropdown($business_id, true, false, true);
+        }
+
+        if (request()->get('request')) {
+            if (request()->ajax()) {
+                return view('expense_request.add_expense_modal')
+                    ->with(compact('expense_categories', 'business_locations', 'users', 'taxes', 'payment_line', 'payment_types', 'accounts', 'bl_attributes', 'contacts'));
+            }
+
+            return view('expense_request.create')
+                ->with(compact('expense_categories', 'business_locations', 'users', 'taxes', 'payment_line', 'payment_types', 'accounts', 'bl_attributes', 'contacts'));
+        } else {
+
+            if (request()->ajax()) {
+                return view('auditexpense::expense.add_expense_modal')
+                    ->with(compact('expense_categories', 'business_locations', 'users', 'taxes', 'payment_line', 'payment_types', 'accounts', 'bl_attributes', 'contacts'));
+            }
+
+            return view('auditexpense::expense.create')
+                ->with(compact('expense_categories', 'business_locations', 'users', 'taxes', 'payment_line', 'payment_types', 'accounts', 'bl_attributes', 'contacts'));
+        }
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        if (! auth()->user()->can('expense.add')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        try {
+            $business_id = $request->session()->get('user.business_id');
+
+            //Check if subscribed or not
+            if (! $this->moduleUtil->isSubscribed($business_id)) {
+                return $this->moduleUtil->expiredResponse(action([\Modules\AuditExpense\Http\Controllers\ExpenseController::class, 'index']));
+            }
+
+            //Validate document size
+            $request->validate([
+                'document' => 'file|max:' . (config('constants.document_size_limit') / 1000),
+            ]);
+
+            $user_id = $request->session()->get('user.id');
+            $status = $request->status;
+            DB::beginTransaction();
+
+            $expense = $this->transactionUtil->createExpense($request, $business_id, $user_id, $status);
+
+            if (request()->ajax()) {
+                $payments = ! empty($request->input('payment')) ? $request->input('payment') : [];
+                $this->cashRegisterUtil->addSellPayments($expense, $payments);
+            }
+
+            $this->transactionUtil->activityLog($expense, 'added');
+
+            event(new ExpenseCreatedOrModified($expense));
+
+            DB::commit();
+
+            $output = [
+                'success' => 1,
+                'msg' => __('expense.expense_add_success'),
+            ];
+        } catch (\Exception $e) {
+            
+
+
+
+            $output = [
+                'success' => 0,
+                'msg' => __('messages.something_went_wrong'),
+            ];
+        }
+
+        if (request()->ajax()) {
+            return $output;
+        }
+
+        if ($request->has('expense')) {
+            return redirect('expenses')->with('status', $output);
+        }
+
+        return redirect('auditexpense/AuditExpense-expenses')->with('status', $output);
+    }
+
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        $business_id = request()->session()->get('user.business_id');
+        $business_logo = Business::where('id', $business_id)->first()->logo;
+        $transaction = Transaction::where('business_id', $business_id)
+            ->findorfail($id);
+        $user = User::where('id', $transaction->expense_for)->first();
+        $business_locations = BusinessLocation::where('id',$transaction->location_id)->first()->name??'';
+        $departments = Category::where('business_id', $business_id)
+            ->where('category_type', 'hrm_department')->where('id', ($user?->essentials_department_id))
+            ->first();
+
+        $designations = Category::where('business_id', $business_id)
+            ->where('category_type', 'hrm_designation')->where('id', $user?->essentials_designation_id)
+            ->first();
+        
+        $total_in_words = $this->transactionUtil->numToWord($transaction->final_total);
+
+        if($transaction->type == 'expense'){
+            return view('auditexpense::expense.show', compact('user','business_logo','transaction','business_locations','departments','designations', 'total_in_words'));
+        }
+        return view('expense_request.show', compact('user','business_logo','transaction','business_locations','departments','designations', 'total_in_words'));
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        if (! auth()->user()->can('expense.edit')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = request()->session()->get('user.business_id');
+
+        //Check if subscribed or not
+        if (! $this->moduleUtil->isSubscribed($business_id)) {
+            return $this->moduleUtil->expiredResponse(action([\Modules\AuditExpense\Http\Controllers\ExpenseController::class, 'index']));
+        }
+
+        $business_locations = BusinessLocation::forDropdown($business_id);
+
+        $expense_categories = ExpenseCategory::where('business_id', $business_id)
+            ->whereNull('parent_id')
+            ->pluck('name', 'id');
+        $expense = Transaction::where('business_id', $business_id)
+            ->where('id', $id)
+            ->first();
+
+        $users = User::forDropdown($business_id, true, true);
+
+        $taxes = TaxRate::forBusinessDropdown($business_id, true, true);
+
+        $contacts = Contact::where('business_id', $business_id)
+        ->where('type', 'supplier')
+        ->active()
+        ->whereNotNull('name')
+        ->get(['id', 'name', 'supplier_business_name'])
+        ->mapWithKeys(function ($contact) {
+            $supplier = $contact->name . ' (' . ($contact->supplier_business_name ?? 'N/A') . ')';
+            return [$contact->id => $supplier];
+        })
+        ->toArray();
+
+        //Sub-category
+        $sub_categories = [];
+
+        if (! empty($expense->expense_category_id)) {
+            $sub_categories = ExpenseCategory::where('business_id', $business_id)
+                ->where('parent_id', $expense->expense_category_id)
+                ->pluck('name', 'id')
+                ->toArray();
+        }
+
+        return view('auditexpense::expense.edit')
+            ->with(compact('expense', 'expense_categories', 'business_locations', 'users', 'taxes', 'contacts', 'sub_categories'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        if (! auth()->user()->can('expense.edit')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        try {
+            //Validate document size
+            $request->validate([
+                'document' => 'file|max:' . (config('constants.document_size_limit') / 1000),
+            ]);
+
+            $business_id = $request->session()->get('user.business_id');
+
+            //Check if subscribed or not
+            if (! $this->moduleUtil->isSubscribed($business_id)) {
+                return $this->moduleUtil->expiredResponse(action([\Modules\AuditExpense\Http\Controllers\ExpenseController::class, 'index']));
+            }
+
+            $expense = $this->transactionUtil->updateExpense($request, $id, $business_id);
+
+            $this->transactionUtil->activityLog($expense, 'edited');
+
+            event(new ExpenseCreatedOrModified($expense));
+
+            $output = [
+                'success' => 1,
+                'msg' => __('expense.expense_update_success'),
+            ];
+        } catch (\Exception $e) {
+            $output = [
+                'success' => 0,
+                'msg' => __('messages.something_went_wrong'),
+            ];
+        }
+
+        return redirect('auditexpense/AuditExpense-expenses')->with('status', $output);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        if (! auth()->user()->can('expense.delete')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if (request()->ajax()) {
+            try {
+                $business_id = request()->session()->get('user.business_id');
+
+                $expense = Transaction::where('business_id', $business_id)
+                    ->where(function ($q) {
+                        $q->where('type', 'expense')
+                            ->orWhere('type', 'expense_refund');
+                    })
+                    ->where('id', $id)
+                    ->first();
+
+                //Delete Cash register transactions
+                $expense->cash_register_payments()->delete();
+
+                $expense->delete();
+
+                //Delete account transactions
+                AccountTransaction::where('transaction_id', $expense->id)->delete();
+
+                event(new ExpenseCreatedOrModified($expense, true));
+
+                $output = [
+                    'success' => true,
+                    'msg' => __('expense.expense_delete_success'),
+                ];
+            } catch (\Exception $e) {
+                $output = [
+                    'success' => false,
+                    'msg' => __('messages.something_went_wrong'),
+                ];
+            }
+
+            return $output;
+        }
+    }
+}

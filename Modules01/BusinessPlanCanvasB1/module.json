@@ -1,0 +1,11 @@
+{
+    "name": "BusinessPlanCanvasB1",
+    "alias": "businessplancanvasb1",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\BusinessPlanCanvasB1\\Providers\\BusinessPlanCanvasB1ServiceProvider"
+    ],
+    "files": []
+}

@@ -1,0 +1,15 @@
+{
+    "name": "AutoAudit",
+    "alias": "autoaudit",
+    "description": "AutoAudit",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\AutoAudit\\Providers\\AutoAuditServiceProvider"
+    ],
+    "files": [],
+    "active": 1,
+    "order": 0,
+    "aliases": {},
+    "requires": []
+}

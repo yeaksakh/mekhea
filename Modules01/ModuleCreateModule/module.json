@@ -1,0 +1,11 @@
+{
+    "name": "ModuleCreateModule",
+    "alias": "modulecreatemodule",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\ModuleCreateModule\\Providers\\ModuleCreateModuleServiceProvider"
+    ],
+    "files": []
+}

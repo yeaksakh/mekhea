@@ -1,0 +1,15 @@
+{
+    "name": "Announcement",
+    "alias": "announcement",
+    "description": "Announcement",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Announcement\\Providers\\AnnouncementServiceProvider"
+    ],
+    "files": [],
+    "active": 1,
+    "order": 0,
+    "aliases": {},
+    "requires": []
+}

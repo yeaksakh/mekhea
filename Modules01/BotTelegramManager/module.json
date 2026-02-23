@@ -1,0 +1,15 @@
+{
+    "name": "BotTelegramManager",
+    "alias": "bottelegrammanager",
+    "description": "BotTelegramManager",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\BotTelegramManager\\Providers\\BotTelegramManagerServiceProvider"
+    ],
+    "files": [],
+    "active": 1,
+    "order": 0,
+    "aliases": {},
+    "requires": []
+}

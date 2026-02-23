@@ -1,0 +1,319 @@
+.btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 16px;
+    border: 1px solid #0f8800;
+    font-size: 14px;
+    font-weight: 500;
+    background-color: #ffffff;
+    color: #0f8800;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+
+
+/* for filter */
+
+
+.h3 {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 12px;
+    font-weight: 500;
+}
+
+.filter-group {
+    position: relative;
+    max-width: 300px;
+    display: flex;
+    /* Enable Flexbox */
+    flex-direction: row;
+    /* Ensure horizontal layout (optional, as it's default) */
+    gap: 12px;
+    /* Optional: Add spacing between children */
+}
+
+.filter-select {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+}
+
+.filter-select:focus {
+    border-color: #0f8800;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.radio-group {
+    display: flex;
+    gap: 16px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.radio-label input[type="radio"] {
+    margin-right: 8px;
+}
+
+.radio-text {
+    font-size: 14px;
+    color: #0f8800;
+}
+
+.run-report-btn {
+    background-color: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    color: #374151;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.run-report-btn:hover {
+    background-color: #0f8800;
+}
+
+.date-inputs {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+    max-width: 300px;
+}
+
+.date-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.date-input:focus {
+    border-color: #0f8800;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.btn-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: flex-end;
+    padding: 10px;
+    flex-wrap: wrap;
+}
+
+/* Style for both buttons */
+.print-button,
+.excel-button {
+    display: flex;
+    /* Make buttons flex containers */
+    align-items: center;
+    /* Center icons vertically */
+    justify-content: center;
+    /* Center icons horizontally, if needed */
+    padding: 8px;
+    /* Consistent padding */
+    border: none;
+    /* Optional: clean up default styles */
+    cursor: pointer;
+}
+
+/* Icon styles */
+.print-icon,
+.excel-icon {
+    width: 24px;
+    /* Set a consistent size */
+    height: 24px;
+    /* Match height to width */
+    background-size: contain;
+    /* Ensure icons scale properly */
+    display: inline-block;
+    /* Ensure spans behave as blocks */
+}
+
+/* Specific icon backgrounds (adjust as needed) */
+.print-icon {
+    background: url('path-to-print-icon.png') no-repeat center;
+}
+
+.excel-icon {
+    background: url('path-to-excel-icon.png') no-repeat center;
+}
+
+.filter-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+    padding: 16px;
+}
+
+#filterForm {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Optional: Ensure buttons stay manageable on small screens */
+@media (max-width: 768px) {
+    .btn-container {
+        justify-content: center;
+        /* Center buttons on smaller screens */
+        gap: 8px;
+        /* Reduce gap for tighter layout */
+    }
+}
+
+/* [Previous styles unchanged] */
+
+.date-inputs {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+    max-width: 300px;
+}
+
+.date-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    /* Light gray border */
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: #fff;
+    /* Explicitly white background */
+    color: #333;
+    /* Dark gray text for readability, not black */
+}
+
+.date-input:focus {
+    border-color: #0f8800;
+    /* Blue border on focus */
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+/* Override jQuery UI Datepicker input styles */
+.ui-datepicker .date-input {
+    background-color: #fff !important;
+    /* Force white background */
+    color: #333 !important;
+    /* Dark gray text, not black */
+    border: 1px solid #ddd !important;
+    /* Match your design */
+}
+
+/* Ensure placeholder text is light-themed */
+.date-input::placeholder {
+    color: #999;
+    /* Light gray placeholder */
+    opacity: 1;
+    /* Ensure visibility */
+}
+
+/* Styles for DataTables top controls */
+.top-controls-container {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.top-right-controls {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Reusable Table Component Styles */
+.reusable-table-container {
+    max-height: 70vh;
+    overflow-y: auto;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+    margin: 16px;
+    background-color: white;
+    max-width: 100%;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+.reusable-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    background-color: white;
+    table-layout: auto; /* Let browser auto-size columns */
+}
+
+.reusable-table th,
+.reusable-table td {
+    word-break: break-word; /* Wrap long text */
+    white-space: normal !important; /* Ensure wrapping */
+    padding: 8px;
+    border: 0.6px solid #5d6d7e;
+    background-color: white;
+    vertical-align: top;
+}
+
+.reusable-table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+.reusable-table thead th {
+    background-color: #f0f0f0;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    box-shadow: 0 2px 5px -2px rgba(0,0,0,0.1);
+}
+
+.reusable-table tfoot td {
+    background-color: #f0f0f0;
+    font-weight: bold;
+}
+
+/* Responsive styles from reusable-table.css */
+@media screen and (max-width: 1200px) {
+    .reusable-table {
+        font-size: 13px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .reusable-table {
+        font-size: 12px;
+    }
+
+    .reusable-table th,
+    .reusable-table td {
+        padding: 6px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .reusable-table {
+        font-size: 11px;
+    }
+
+    .reusable-table th,
+    .reusable-table td {
+        padding: 4px;
+    }
+}

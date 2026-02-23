@@ -1,0 +1,15 @@
+{
+    "name": "Documentary",
+    "alias": "documentary",
+    "description": "Documentary",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Documentary\\Providers\\DocumentaryServiceProvider"
+    ],
+    "files": [],
+    "active": 1,
+    "order": 0,
+    "aliases": {},
+    "requires": []
+}

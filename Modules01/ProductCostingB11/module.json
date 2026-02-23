@@ -1,0 +1,15 @@
+{
+    "name": "ProductCostingB11",
+    "alias": "productcostingb11",
+    "description": "ProductCostingB11 Module",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\ProductCostingB11\\Providers\\ProductCostingB11ServiceProvider"
+    ],
+    "files": [],
+    "active": 1,
+    "order": 0,
+    "aliases": {},
+    "requires": []
+}

@@ -1,0 +1,15 @@
+{
+    "name": "ProductBook",
+    "alias": "productbook",
+    "description": "ProductBook",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\ProductBook\\Providers\\ProductBookServiceProvider"
+    ],
+    "files": [],
+    "active": 1,
+    "order": 0,
+    "aliases": {},
+    "requires": []
+}

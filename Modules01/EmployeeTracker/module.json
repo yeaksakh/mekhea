@@ -1,0 +1,15 @@
+{
+    "name": "EmployeeTracker",
+    "alias": "employeetracker",
+    "description": "EmployeeTracker",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\EmployeeTracker\\Providers\\EmployeeTrackerServiceProvider"
+    ],
+    "files": [],
+    "active": 1,
+    "order": 0,
+    "aliases": {},
+    "requires": []
+}

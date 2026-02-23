@@ -1,0 +1,15 @@
+{
+    "name": "AuditIncome",
+    "alias": "auditincome",
+    "description": "AuditIncome",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\AuditIncome\\Providers\\AuditIncomeServiceProvider"
+    ],
+    "files": [],
+    "active": 1,
+    "order": 0,
+    "aliases": {},
+    "requires": []
+}

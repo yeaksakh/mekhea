@@ -1,0 +1,15 @@
+{
+    "name": "CustomerCardB1",
+    "alias": "customercardb1",
+    "description": "CustomerCardB1",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\CustomerCardB1\\Providers\\CustomerCardB1ServiceProvider"
+    ],
+    "files": [],
+    "active": 1,
+    "order": 0,
+    "aliases": {},
+    "requires": []
+}

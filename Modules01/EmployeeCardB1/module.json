@@ -1,0 +1,15 @@
+{
+    "name": "EmployeeCardB1",
+    "alias": "employeecardb1",
+    "description": "EmployeeCardB1",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\EmployeeCardB1\\Providers\\EmployeeCardB1ServiceProvider"
+    ],
+    "files": [],
+    "active": 1,
+    "order": 0,
+    "aliases": {},
+    "requires": []
+}

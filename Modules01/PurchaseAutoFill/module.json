@@ -1,0 +1,15 @@
+{
+    "name": "PurchaseAutoFill",
+    "alias": "purchaseautofill",
+    "description": "PurchaseAutoFill",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\PurchaseAutoFill\\Providers\\PurchaseAutoFillServiceProvider"
+    ],
+    "files": [],
+    "active": 1,
+    "order": 0,
+    "aliases": {},
+    "requires": []
+}

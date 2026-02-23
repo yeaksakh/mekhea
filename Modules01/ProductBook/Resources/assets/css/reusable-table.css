@@ -1,0 +1,590 @@
+/* Reusable Table Component Styles */
+.reusable-table-container {
+    max-height: 70vh;
+    overflow-y: auto;
+    overflow-x: visible;
+    margin: 16px;
+    margin-bottom: 100px;
+    background-color: white;
+    max-width: 100%;
+    position: relative;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    scrollbar-width: thin; /* Firefox */
+}
+
+/* Custom scrollbar for WebKit browsers */
+.reusable-table-container::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+}
+
+.reusable-table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.reusable-table-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.reusable-table-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Row limit controls */
+.row-limit-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin: 8px 0;
+    font-size: 14px;
+}
+
+.row-limit-controls label {
+    margin-right: 8px;
+}
+
+.row-limit-controls select {
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    margin-right: 16px;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pagination-btn {
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.pagination-btn:hover {
+    background-color: #e9ecef;
+}
+
+.pagination-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.pagination-info {
+    font-size: 14px;
+    margin: 0 8px;
+}
+
+.reusable-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 14px;
+    background-color: white;
+    table-layout: fixed;
+}
+
+.reusable-table th,
+.reusable-table td {
+    word-break: break-word;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    padding: 8px;
+    border: 0.6px solid #5d6d7e;
+    background-color: white;
+    position: relative; /* For sticky columns */
+}
+
+/* Sticky first column option (can be enabled for specific tables) */
+.reusable-table.sticky-first-col th:first-child,
+.reusable-table.sticky-first-col td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background-color: #f8f9fa;
+    box-shadow: 2px 0 5px -2px rgba(0,0,0,0.2);
+}
+
+/* Highlight row on hover */
+.reusable-table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+/* Column width presets - more flexible for responsive design */
+.reusable-table .col-xs {
+    width: 8%;
+    min-width: 50px;
+    text-align: center;
+}
+
+.reusable-table .col-sm {
+    width: 12%;
+    min-width: 80px;
+    text-align: center;
+}
+
+.reusable-table .col-md {
+    width: 18%;
+    min-width: 100px;
+    text-align: center;
+}
+
+.reusable-table .col-lg {
+    width: 25%;
+    min-width: 150px;
+    text-align: center;
+}
+
+.reusable-table .col-xl {
+    width: 30%;
+    min-width: 200px;
+    text-align: center;
+}
+
+/* Utility classes */
+.reusable-table .text-center {
+    text-align: center;
+}
+
+.reusable-table .text-right {
+    text-align: right;
+}
+
+.reusable-table .number {
+    text-align: center;
+    font-family: monospace;
+}
+
+.reusable-table .img-cell {
+    text-align: center;
+}
+
+.reusable-table .img-cell img {
+    max-width: 60px;
+    height: 60px;
+    object-fit: contain;
+}
+
+/* Header styling */
+.reusable-table thead th {
+    background-color: #f0f0f0;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    box-shadow: 0 2px 5px -2px rgba(0,0,0,0.1);
+}
+
+/* Footer styling */
+.reusable-table tfoot td {
+    background-color: #f0f0f0;
+    font-weight: bold;
+}
+
+.filter-container {
+    margin: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+/* DataTables Search Box Styling */
+.dataTables_filter input[type="search"] {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: #fff;
+    margin-left: 8px;
+}
+
+.dataTables_filter label {
+    font-size: 14px;
+    font-weight: normal;
+    margin-bottom: 0;
+}
+
+/* DataTables Length (Rows per page) Styling */
+.dataTables_length select {
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: #fff;
+    margin: 0 8px;
+}
+
+.dataTables_length label {
+    font-size: 14px;
+    font-weight: normal;
+    margin-bottom: 0;
+}
+
+/* DataTables Pagination Styling */
+.dataTables_paginate .paginate_button {
+    background-color: #f8f9fa !important;
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
+    padding: 6px 12px !important;
+    margin: 0 2px !important;
+    font-size: 14px !important;
+    color: #333 !important;
+    text-decoration: none !important;
+}
+
+.dataTables_paginate .paginate_button:hover {
+    background-color: #e9ecef !important;
+    border-color: #adb5bd !important;
+    color: #333 !important;
+}
+
+.dataTables_paginate .paginate_button.current {
+    background-color: #007bff !important;
+    border-color: #007bff !important;
+    color: white !important;
+}
+
+.dataTables_paginate .paginate_button.disabled {
+    background-color: #f8f9fa !important;
+    border-color: #ddd !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+    opacity: 0.5 !important;
+}
+
+/* DataTables Info Text Styling */
+.dataTables_info {
+    font-size: 14px;
+    color: #6c757d;
+    margin-top: 8px;
+}
+
+/* DataTables Processing Indicator */
+.dataTables_processing {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
+    padding: 20px !important;
+    font-size: 16px !important;
+    color: #0f8800 !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: auto !important;
+    margin: 0 !important;
+}
+
+/* DataTables Buttons Styling */
+.dt-buttons .btn {
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 14px;
+    margin-right: 8px;
+    color: #333;
+}
+
+.dt-buttons .btn:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+}
+
+/* Column Visibility Button Dropdown */
+.dt-button-collection {
+    background-color: #fff !important;
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+}
+
+.dt-button-collection .dt-button {
+    background-color: transparent !important;
+    border: none !important;
+    padding: 8px 16px !important;
+    text-align: left !important;
+    width: 100% !important;
+    color: #333 !important;
+}
+
+.dt-button-collection .dt-button:hover {
+    background-color: #f8f9fa !important;
+}
+
+/* DataTables Wrapper Layout Adjustments */
+.dataTables_wrapper .row {
+    margin: 0;
+}
+
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter {
+    margin-bottom: 16px;
+}
+
+.dataTables_wrapper .dataTables_info,
+.dataTables_wrapper .dataTables_paginate {
+    margin-top: 16px;
+}
+
+.dataTables_wrapper {
+    overflow-x: visible !important;
+}
+
+/* Empty Table Message */
+.dataTables_empty {
+    text-align: center;
+    font-style: italic;
+    color: #6c757d;
+    padding: 20px;
+}
+
+/* Responsive styles */
+@media screen and (max-width: 1200px) {
+    .reusable-table-container {
+        overflow-x: visible;
+        position: relative;
+    }
+    
+    .reusable-table {
+        font-size: 13px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .reusable-table {
+        font-size: 12px;
+    }
+
+    .reusable-table th,
+    .reusable-table td {
+        padding: 6px;
+    }
+    
+    .reusable-table .img-cell img {
+        max-width: 40px;
+        height: 40px;
+    }
+    
+    /* Adjust column widths for smaller screens */
+    .reusable-table .col-xs {
+        width: 8%;
+        min-width: 40px;
+    }
+    
+    .reusable-table .col-sm {
+        width: 12%;
+        min-width: 60px;
+    }
+    
+    .reusable-table .col-md {
+        width: 18%;
+        min-width: 80px;
+    }
+    
+    .reusable-table .col-lg {
+        width: 25%;
+        min-width: 120px;
+    }
+    
+    .reusable-table .col-xl {
+        width: 30%;
+        min-width: 160px;
+    }
+    
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        text-align: center;
+        margin-bottom: 12px;
+    }
+    
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate {
+        text-align: center;
+        margin-top: 12px;
+    }
+    
+    .dt-buttons .btn {
+        font-size: 12px;
+        padding: 4px 8px;
+        margin-right: 4px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .reusable-table {
+        font-size: 11px;
+    }
+
+    .reusable-table th,
+    .reusable-table td {
+        padding: 4px;
+    }
+    
+    /* More aggressive compression for very small screens */
+    .filter-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+/* Print-specific styles */
+@media print {
+    /* General print settings */
+    html, body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    
+    /* Hide non-essential elements for printing */
+    .no-print, .no-print * {
+        display: none !important;
+    }
+    
+    /* Hide DataTables controls for print */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate,
+    .dt-buttons {
+        display: none !important;
+    }
+    
+    /* Reset container properties for printing */
+    .reusable-table-container {
+        overflow: visible;
+        margin: 0;
+        max-width: 100%;
+        width: 100%;
+        max-height: none;
+        border: none;
+    }
+    
+    .reusable-table {
+        /* Reset table to fit on paper */
+        width: 100%;
+        table-layout: auto;
+        font-size: 10pt;
+        border-collapse: collapse;
+        page-break-inside: auto;
+    }
+    
+    /* Adjust rows for pagination */
+    .reusable-table tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+    
+    /* Reset cell properties for printing */
+    .reusable-table th,
+    .reusable-table td {
+        position: static;
+        background-color: white !important;
+        color: black !important;
+        border: 1pt solid #000;
+        padding: 4pt;
+        font-size: 9pt;
+        page-break-inside: avoid;
+        word-break: break-word;
+        white-space: normal;
+        box-shadow: none !important;
+    }
+    
+    /* Proper header for each page */
+    .reusable-table thead {
+        display: table-header-group;
+    }
+    
+    .reusable-table thead th {
+        background-color: #f0f0f0 !important;
+        font-weight: bold;
+    }
+    
+    /* Proper footer for each page */
+    .reusable-table tfoot {
+        display: table-footer-group;
+    }
+    
+    /* Column size adjustments for print */
+    .reusable-table .col-xs,
+    .reusable-table .col-sm,
+    .reusable-table .col-md,
+    .reusable-table .col-lg,
+    .reusable-table .col-xl {
+        min-width: auto;
+        max-width: none;
+    }
+    
+    /* Relative sizing for print */
+    .reusable-table .col-xs {
+        width: 5%;
+    }
+    
+    .reusable-table .col-sm {
+        width: 10%;
+    }
+    
+    .reusable-table .col-md {
+        width: 15%;
+    }
+    
+    .reusable-table .col-lg {
+        width: 20%;
+    }
+    
+    .reusable-table .col-xl {
+        width: 25%;
+    }
+    
+    /* Adjust filter container for print */
+    .filter-container {
+        display: none;
+    }
+    
+    /* Ensure backgrounds print (if browser supports) */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    
+    /* Keep report header visible */
+    .report-header {
+        position: static;
+        display: block;
+        text-align: center;
+        margin-bottom: 10pt;
+        page-break-after: avoid;
+    }
+    
+    /* Add page numbers */
+    @page {
+        size: A4 landscape;
+        margin: 0.5cm;
+    }
+    
+    /* Special handling for wide tables */
+    .reusable-table.wide-table {
+        font-size: 8pt;
+    }
+    
+    .reusable-table.wide-table th,
+    .reusable-table.wide-table td {
+        padding: 2pt;
+    }
+}

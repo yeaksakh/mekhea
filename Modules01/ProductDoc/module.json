@@ -1,0 +1,15 @@
+{
+    "name": "ProductDoc",
+    "alias": "productdoc",
+    "description": "ProductDoc",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\ProductDoc\\Providers\\ProductDocServiceProvider"
+    ],
+    "files": [],
+    "active": 1,
+    "order": 0,
+    "aliases": {},
+    "requires": []
+}
